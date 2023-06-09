@@ -1,10 +1,11 @@
+#include "KinectBPFunctionLibrary.h"
 #include "KinectPluginPrivatePCH.h"
 
 UKinectManager* UKinectBPFunctionLibrary::KinectManager(UObject* WorldContextObject)
 {
-
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject);
-	UKinectManager* tempObject = Cast<UKinectManager>(StaticConstructObject_Internal(UKinectManager::StaticClass()));
+	FStaticConstructObjectParameters Params(UKinectManager::StaticClass());
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	UKinectManager* tempObject = Cast<UKinectManager>(StaticConstructObject_Internal(Params));
 
 	return tempObject;
 

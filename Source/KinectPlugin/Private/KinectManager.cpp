@@ -1,3 +1,4 @@
+#include "KinectManager.h"
 #include "KinectPluginPrivatePCH.h"
 
 // Sets default values
@@ -77,7 +78,9 @@ void UKinectManager::UpdateMainWindow(PCWSTR instanceName, HRESULT sensorStatus)
 			//UKinectSensor* tempSensor = new UKinectSensor();
 			tempSensor->Init(pNuiSensor);
 			*/
-			UKinectSensor* tempSensor = Cast<UKinectSensor>(StaticConstructObject_Internal(UKinectSensor::StaticClass()));
+			FStaticConstructObjectParameters Params(UKinectManager::StaticClass());
+
+			UKinectSensor* tempSensor = Cast<UKinectSensor>(StaticConstructObject_Internal(Params));
 			tempSensor->Init(pNuiSensor);
 
 			//m_sensorMap.Add(instanceName, tempSensor);

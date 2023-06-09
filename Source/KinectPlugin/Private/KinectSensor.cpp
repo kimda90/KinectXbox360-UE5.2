@@ -1,5 +1,7 @@
+#include "KinectSensor.h"
+#include "Rendering/Texture2DResource.h" 
 #include "KinectPluginPrivatePCH.h"
-
+#include <cmath>
 #include <algorithm>
 
 
@@ -218,7 +220,7 @@ void UKinectSensor::ResetTexture(UTexture2D*& Texture, UMaterialInstanceDynamic*
 	Texture->AddToRoot();
 	Texture->UpdateResource();
 
-	m_RenderParams.Texture2DResource = (FTexture2DResource*)Texture->Resource;
+	m_RenderParams.Texture2DResource = (FTexture2DResource*)Texture->GetResource();
 
 	////////////////////////////////////////////////////////////////////////////////
 	ResetMatInstance(Texture, MaterialInstance);
@@ -233,13 +235,13 @@ void UKinectSensor::DestroyTexture(UTexture2D*& Texture)
 	{
 		Texture->RemoveFromRoot();
 
-		if (Texture->Resource)
+		if (Texture->GetResource())
 		{
-			BeginReleaseResource(Texture->Resource);
+			BeginReleaseResource(Texture->GetResource());
 			FlushRenderingCommands();
 		}
 
-		Texture->MarkPendingKill();
+		Texture->MarkAsGarbage();
 		Texture = nullptr;
 	}
 	else{
@@ -294,16 +296,33 @@ void UKinectSensor::TextureUpdate(const void *buffer, UTexture2D*& Texture, FKin
 	return;
 	}*/
 	
-	if (Texture && Texture->Resource)
+	if (Texture && Texture->GetResource())
 	{
-
 		// Is our texture ready?
-		auto ref = static_cast<FTexture2DResource*>(Texture->Resource)->GetTexture2DRHI();
+		FTexture2DResource* tex2DResource = static_cast<FTexture2DResource*>(Texture->GetResource());
+		if (!tex2DResource)
+		{
+			UE_LOG(KinectLog, Warning, TEXT("INVALID TEXTURE RESOURCE"))
+				return;
+		}
+
+		auto ref = tex2DResource->GetTexture2DRHI();
 		if (!ref)
 		{
 			UE_LOG(KinectLog, Warning, TEXT("NO REF"))
 				return;
 		}
+
+		/*
+		
+		// Is our texture ready?
+		auto ref = static_cast<FTexture2DResource*>(Texture->GetResource())->GetTexture2DRHI();
+		if (!ref)
+		{
+			UE_LOG(KinectLog, Warning, TEXT("NO REF"))
+				return;
+		}
+		*/
 
 		if (buffer == nullptr)
 		{
@@ -311,8 +330,19 @@ void UKinectSensor::TextureUpdate(const void *buffer, UTexture2D*& Texture, FKin
 				return;
 		}
 
+		const void* MyImageData = buffer;
+		UTexture2D* MyTargetTexture = Texture;
+		int32 MyStride = Width * 4;
+		FKinectTextureParams MyParams = m_RenderParams;
+		ENQUEUE_RENDER_COMMAND(FUpdateTextureCommand)(
+			[MyImageData, MyTargetTexture, MyStride, MyParams](FRHICommandListImmediate& RHICmdList)
+			{
+				RHIUpdateTexture2D(MyParams.Texture2DResource->GetTexture2DRHI(), 0, *MyParams.UpdateRegions, MyStride, (uint8*)MyImageData);
+			}
+			);
+		/*
 		ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(
-			void,
+			FUpdateTextureCommand,
 			const void*, ImageData, buffer,
 			UTexture2D*, TargetTexture, Texture,
 			int32, Stride, Width * 4,
@@ -323,6 +353,8 @@ void UKinectSensor::TextureUpdate(const void *buffer, UTexture2D*& Texture, FKin
 
 			});
 
+		*/
+		
 	}
 	else {
 		UE_LOG(KinectLog, Warning, TEXT("no Texture or Texture->resource"))

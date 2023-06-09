@@ -72,7 +72,7 @@ public class KinectPlugin : ModuleRules
 			}
 			);
 
-        if ((Target.Platform == UnrealTargetPlatform.Win64) || (Target.Platform == UnrealTargetPlatform.Win32))
+        if (Target.Platform == UnrealTargetPlatform.Win64)
         {
             string PlatformString = (Target.Platform == UnrealTargetPlatform.Win64) ? "amd64" : "x86";
             PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "v1.8","lib", PlatformString, "Kinect10.lib"));

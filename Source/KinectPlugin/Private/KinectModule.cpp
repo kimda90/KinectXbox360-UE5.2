@@ -1,5 +1,5 @@
 // Some copyright should be here...
-
+#include "KinectModule.h"
 #include "KinectPluginPrivatePCH.h"
 
 DEFINE_LOG_CATEGORY(KinectLog);
