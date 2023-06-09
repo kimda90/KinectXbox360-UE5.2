@@ -78,7 +78,7 @@ void UKinectManager::UpdateMainWindow(PCWSTR instanceName, HRESULT sensorStatus)
 			//UKinectSensor* tempSensor = new UKinectSensor();
 			tempSensor->Init(pNuiSensor);
 			*/
-			FStaticConstructObjectParameters Params(UKinectManager::StaticClass());
+			FStaticConstructObjectParameters Params(UKinectSensor::StaticClass());
 
 			UKinectSensor* tempSensor = Cast<UKinectSensor>(StaticConstructObject_Internal(Params));
 			tempSensor->Init(pNuiSensor);
