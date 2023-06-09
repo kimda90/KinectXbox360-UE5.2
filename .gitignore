@@ -217,4 +217,5 @@ pip-log.txt
 
 
 Source/.vs
+Source/.vs/*
 Binaries/*
